@@ -1,0 +1,1477 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Портфолио —Лиза</title>
+
+  <!--
+    ═══════════════════════════════════════════
+    СТРУКТУРА ПАПОК ПРОЕКТА
+    ═══════════════════════════════════════════
+    /project
+    ├── index.html
+    ├── /fonts          (стилистические шрифты .woff2, опционально)
+    ├── /images         (avatar.jpg, work1.jpg, work2.jpg …)
+    ├── /videos         (video1.mp4, preview1.jpg …)
+    └── /presentations  (project.pdf)
+    ═══════════════════════════════════════════
+  -->
+
+  <style>
+    /* ══════════════════════════════════════════
+       НАСТРОЙКИ ТЕМЫ — меняй цвета здесь!
+       ══════════════════════════════════════════ */
+    :root {
+      /* Основная палитра */
+      --color-bg: #FFFBF5;
+      --color-bg-alt: #F5F0FF;
+      --color-lavender: #E0E7FF;
+      --color-peach: #FFE4E1;
+      --color-mint: #D1FAE5;
+      --color-cream: #FFFBF5;
+
+      /* Акценты */
+      --accent: #7C3AED;
+      --accent-light: #A78BFA;
+      --accent-glow: rgba(124, 58, 237, 0.35);
+      --accent-pink: #EC4899;
+      --accent-cyan: #06B6D4;
+
+      /* Текст */
+      --text-dark: #1E1B4B;
+      --text-body: #374151;
+      --text-muted: #6B7280;
+      --text-on-dark: #FFFFFF;
+
+      /* Glassmorphism */
+      --glass-bg: rgba(255, 255, 255, 0.55);
+      --glass-border: rgba(255, 255, 255, 0.6);
+      --glass-blur: 20px;
+
+      /* Тени */
+      --shadow-soft: 0 8px 32px rgba(124, 58, 237, 0.08);
+      --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
+      --shadow-card-hover: 0 12px 40px rgba(124, 58, 237, 0.15), 0 4px 12px rgba(0, 0, 0, 0.06);
+      --shadow-glow: 0 0 30px var(--accent-glow);
+
+      /* Скругления */
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+
+      /* Переходы */
+      --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ══════════════════════════════════════════
+       ШРИФТЫ (локальные плейсхолдеры)
+       ══════════════════════════════════════════ */
+    /* @font-face {
+      font-family: 'HeadingFont';
+      src: url('/fonts/heading-font.woff2') format('woff2');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    } */
+
+    /* ══════════════════════════════════════════
+       СБРОС И БАЗОВЫЕ СТИЛИ
+       ══════════════════════════════════════════ */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 80px;
+    }
+
+    body {
+      font-family: -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+      color: var(--text-body);
+      background: var(--color-bg);
+      line-height: 1.7;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* ══════════════════════════════════════════
+       АНИМИРОВАННЫЙ ФОН — плавающие блобы
+       ══════════════════════════════════════════ */
+    .bg-blobs {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.5;
+      will-change: transform;
+    }
+
+    .blob-1 {
+      width: 600px;
+      height: 600px;
+      background: var(--color-lavender);
+      top: -10%;
+      left: -5%;
+      animation: blobFloat1 20s ease-in-out infinite;
+    }
+
+    .blob-2 {
+      width: 500px;
+      height: 500px;
+      background: var(--color-peach);
+      top: 30%;
+      right: -10%;
+      animation: blobFloat2 25s ease-in-out infinite;
+    }
+
+    .blob-3 {
+      width: 450px;
+      height: 450px;
+      background: var(--color-mint);
+      bottom: -5%;
+      left: 20%;
+      animation: blobFloat3 22s ease-in-out infinite;
+    }
+
+    .blob-4 {
+      width: 350px;
+      height: 350px;
+      background: rgba(124, 58, 237, 0.15);
+      top: 60%;
+      left: 60%;
+      animation: blobFloat4 18s ease-in-out infinite;
+    }
+
+    @keyframes blobFloat1 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(80px, 60px) scale(1.1); }
+      66% { transform: translate(-40px, 100px) scale(0.95); }
+    }
+
+    @keyframes blobFloat2 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(-70px, -50px) scale(1.05); }
+      66% { transform: translate(50px, -80px) scale(0.9); }
+    }
+
+    @keyframes blobFloat3 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(60px, -70px) scale(1.08); }
+      66% { transform: translate(-80px, -30px) scale(0.95); }
+    }
+
+    @keyframes blobFloat4 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(-60px, 60px) scale(1.15); }
+    }
+
+    /* ══════════════════════════════════════════
+       ШАПКА И НАВИГАЦИЯ
+       ══════════════════════════════════════════ */
+    .site-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      padding: 0 24px;
+      transition: var(--transition);
+    }
+
+    .site-header.scrolled {
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border-bottom: 1px solid var(--glass-border);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px;
+    }
+
+    .logo {
+      font-family: 'HeadingFont', -apple-system, 'Segoe UI', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent-pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-list {
+      display: flex;
+      list-style: none;
+      gap: 8px;
+    }
+
+    .nav-link {
+      display: block;
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: var(--transition-fast);
+      position: relative;
+    }
+
+    .nav-link:hover {
+      color: var(--accent);
+      background: rgba(124, 58, 237, 0.06);
+    }
+
+    .nav-link.active {
+      color: var(--accent);
+      background: rgba(124, 58, 237, 0.1);
+      font-weight: 600;
+    }
+
+    /* Мобильное меню — бургер */
+    .burger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+      z-index: 1001;
+    }
+
+    .burger span {
+      display: block;
+      width: 24px;
+      height: 2.5px;
+      background: var(--text-dark);
+      border-radius: 2px;
+      transition: var(--transition);
+    }
+
+    .burger.open span:nth-child(1) {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+
+    .burger.open span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .burger.open span:nth-child(3) {
+      transform: rotate(-45deg) translate(5px, -5px);
+    }
+
+    /* ══════════════════════════════════════════
+       СЕКЦИЯ-ОБЁРТКА (общие стили)
+       ══════════════════════════════════════════ */
+    .section {
+      padding: 100px 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-title {
+      font-family: 'HeadingFont', -apple-system, 'Segoe UI', sans-serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      color: var(--text-dark);
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .section-subtitle {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      margin-bottom: 48px;
+      max-width: 600px;
+    }
+
+    /* Анимация появления при скролле */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1),
+                  transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Stagger для дочерних элементов */
+    .reveal-stagger > .reveal:nth-child(1) { transition-delay: 0s; }
+    .reveal-stagger > .reveal:nth-child(2) { transition-delay: 0.1s; }
+    .reveal-stagger > .reveal:nth-child(3) { transition-delay: 0.2s; }
+    .reveal-stagger > .reveal:nth-child(4) { transition-delay: 0.3s; }
+    .reveal-stagger > .reveal:nth-child(5) { transition-delay: 0.4s; }
+    .reveal-stagger > .reveal:nth-child(6) { transition-delay: 0.5s; }
+
+    /* ══════════════════════════════════════════
+       ГЕРОЙ-СЕКЦИЯ (первый экран)
+       ══════════════════════════════════════════ */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      position: relative;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 20px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: 100px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--accent);
+      margin-bottom: 32px;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: heroFadeIn 0.8s 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    .hero-title {
+      font-family: 'HeadingFont', -apple-system, 'Segoe UI', sans-serif;
+      font-size: clamp(2.8rem, 8vw, 5.5rem);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+      opacity: 0;
+      transform: translateY(30px);
+      animation: heroFadeIn 0.9s 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    .hero-title .gradient-text {
+      background: linear-gradient(135deg, var(--accent), var(--accent-pink), var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      background-size: 200% 200%;
+      animation: gradientShift 6s ease-in-out infinite;
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .hero-description {
+      font-size: clamp(1.05rem, 2.5vw, 1.3rem);
+      color: var(--text-muted);
+      max-width: 560px;
+      margin-bottom: 40px;
+      opacity: 0;
+      transform: translateY(30px);
+      animation: heroFadeIn 0.9s 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 36px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-pink));
+      color: var(--text-on-dark);
+      font-size: 1.05rem;
+      font-weight: 600;
+      border-radius: 100px;
+      border: none;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: 0 4px 20px var(--accent-glow);
+      opacity: 0;
+      transform: translateY(30px);
+      animation: heroFadeIn 0.9s 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    .hero-cta:hover {
+      transform: translateY(-3px) scale(1.04);
+      box-shadow: 0 8px 32px var(--accent-glow);
+    }
+
+    .hero-scroll-hint {
+      position: absolute;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      opacity: 0;
+      animation: heroFadeIn 1s 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    .scroll-arrow {
+      width: 24px;
+      height: 24px;
+      border-right: 2px solid var(--text-muted);
+      border-bottom: 2px solid var(--text-muted);
+      transform: rotate(45deg);
+      animation: scrollBounce 2s ease-in-out infinite;
+    }
+
+    @keyframes scrollBounce {
+      0%, 100% { transform: rotate(45deg) translate(0, 0); opacity: 0.5; }
+      50% { transform: rotate(45deg) translate(4px, 4px); opacity: 1; }
+    }
+
+    @keyframes heroFadeIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ══════════════════════════════════════════
+       СЕКЦИЯ «ОБО МНЕ»
+       ══════════════════════════════════════════ */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+
+    .about-avatar-wrap {
+      position: relative;
+      display: flex;
+      justify-content: center;
+    }
+
+    .about-avatar-ring {
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      padding: 6px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-pink), var(--accent-cyan));
+      animation: ringRotate 8s linear infinite;
+      box-shadow: var(--shadow-glow);
+    }
+
+    @keyframes ringRotate {
+      to { filter: hue-rotate(360deg); }
+    }
+
+    .about-avatar {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid var(--color-bg);
+      background: var(--color-lavender);
+    }
+
+    .about-text-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: 40px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .about-text-card p {
+      font-size: 1.1rem;
+      line-height: 1.8;
+      color: var(--text-body);
+    }
+
+    .about-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .about-tag {
+      padding: 6px 16px;
+      background: rgba(124, 58, 237, 0.08);
+      color: var(--accent);
+      border-radius: 100px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    /* ══════════════════════════════════════════
+       КАРУСЕЛЬ (общие стили)
+       ══════════════════════════════════════════ */
+    .carousel-wrap {
+      position: relative;
+    }
+
+    .carousel {
+      display: flex;
+      gap: 24px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      padding: 16px 4px 24px;
+      scrollbar-width: none;
+    }
+
+    .carousel::-webkit-scrollbar {
+      display: none;
+    }
+
+    .carousel-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--shadow-card);
+      font-size: 1.3rem;
+      cursor: pointer;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      color: var(--text-dark);
+    }
+
+    .carousel-btn:hover {
+      background: var(--accent);
+      color: var(--text-on-dark);
+      box-shadow: var(--shadow-glow);
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    .carousel-btn-prev { left: -16px; }
+    .carousel-btn-next { right: -16px; }
+
+    /* ══════════════════════════════════════════
+       СЕКЦИЯ «МОИ КАРТИНКИ»
+       ══════════════════════════════════════════ */
+    .image-card {
+      flex: 0 0 320px;
+      scroll-snap-align: center;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--shadow-card);
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+    }
+
+    .image-card:hover {
+      transform: translateY(-6px) scale(1.03);
+      box-shadow: var(--shadow-card-hover);
+    }
+
+    .image-card:hover .image-card-glow {
+      opacity: 1;
+    }
+
+    .image-card-glow {
+      position: absolute;
+      inset: -2px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(135deg, var(--accent), var(--accent-pink));
+      opacity: 0;
+      z-index: -1;
+      transition: var(--transition);
+      filter: blur(8px);
+    }
+
+    .image-card img {
+      width: 100%;
+      height: 240px;
+      object-fit: cover;
+      transition: var(--transition);
+    }
+
+    .image-card:hover img {
+      transform: scale(1.05);
+    }
+
+    .image-card-body {
+      padding: 16px 20px;
+    }
+
+    .image-card-title {
+      font-weight: 700;
+      color: var(--text-dark);
+      font-size: 0.95rem;
+    }
+
+    /* ══════════════════════════════════════════
+       СЕКЦИЯ «МОИ ВИДЕО»
+       ══════════════════════════════════════════ */
+    .video-card {
+      flex: 0 0 360px;
+      scroll-snap-align: center;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--shadow-card);
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+    }
+
+    .video-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-card-hover);
+    }
+
+    .video-thumb {
+      position: relative;
+      width: 100%;
+      height: 220px;
+      overflow: hidden;
+    }
+
+    .video-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: var(--transition);
+    }
+
+    .video-card:hover .video-thumb img {
+      transform: scale(1.05);
+    }
+
+    .video-play-btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: rgba(124, 58, 237, 0.85);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      color: white;
+      transition: var(--transition);
+      box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4);
+    }
+
+    .video-card:hover .video-play-btn {
+      transform: translate(-50%, -50%) scale(1.15);
+      background: var(--accent);
+    }
+
+    .video-card-body {
+      padding: 16px 20px;
+    }
+
+    .video-card-title {
+      font-weight: 700;
+      color: var(--text-dark);
+      font-size: 0.95rem;
+    }
+
+    /* ══════════════════════════════════════════
+       СЕКЦИЯ «МОЯ ПРЕЗЕНТАЦИЯ»
+       ══════════════════════════════════════════ */
+    .presentation-viewer {
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+    }
+
+    .presentation-viewer iframe,
+    .presentation-viewer embed {
+      width: 100%;
+      height: 600px;
+      border: none;
+      display: block;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border-radius: 100px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-pink));
+      color: var(--text-on-dark);
+      box-shadow: 0 4px 16px var(--accent-glow);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px var(--accent-glow);
+    }
+
+    .btn-outline {
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1.5px solid var(--accent-light);
+      color: var(--accent);
+    }
+
+    .btn-outline:hover {
+      background: var(--accent);
+      color: var(--text-on-dark);
+      transform: translateY(-2px);
+    }
+
+    .btn-row {
+      margin-top: 24px;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    /* ══════════════════════════════════════════
+       СЕКЦИЯ «МОИ ПРОЕКТЫ»
+       ══════════════════════════════════════════ */
+    .project-viewer {
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+    }
+
+    .project-viewer iframe {
+      width: 100%;
+      height: 700px;
+      border: none;
+      display: block;
+    }
+
+    /* ══════════════════════════════════════════
+       МОДАЛЬНЫЕ ОКНА (lightbox)
+       ══════════════════════════════════════════ */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      background: rgba(15, 10, 40, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.35s ease, visibility 0.35s ease;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      position: relative;
+      max-width: 90vw;
+      max-height: 90vh;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transform: scale(0.9);
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .modal-overlay.open .modal-content {
+      transform: scale(1);
+    }
+
+    .modal-content img {
+      max-width: 90vw;
+      max-height: 85vh;
+      object-fit: contain;
+      border-radius: var(--radius-lg);
+    }
+
+    .modal-content video {
+      max-width: 90vw;
+      max-height: 85vh;
+      border-radius: var(--radius-lg);
+      outline: none;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+      border: none;
+      color: white;
+      font-size: 1.3rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-fast);
+      z-index: 10;
+    }
+
+    .modal-close:hover {
+      background: var(--accent);
+      transform: rotate(90deg);
+    }
+
+    /* ══════════════════════════════════════════
+       ПОДВАЛ
+       ══════════════════════════════════════════ */
+    .site-footer {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      border-top: 1px solid rgba(124, 58, 237, 0.08);
+    }
+
+    .site-footer span {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* ══════════════════════════════════════════
+       АДАПТИВНОСТЬ — ПЛАНШЕТ
+       ══════════════════════════════════════════ */
+    @media (max-width: 1023px) {
+      .about-grid {
+        grid-template-columns: 220px 1fr;
+        gap: 32px;
+      }
+
+      .about-avatar-ring {
+        width: 220px;
+        height: 220px;
+      }
+
+      .image-card {
+        flex: 0 0 280px;
+      }
+
+      .video-card {
+        flex: 0 0 300px;
+      }
+
+      .carousel-btn-prev { left: -8px; }
+      .carousel-btn-next { right: -8px; }
+    }
+
+    /* ══════════════════════════════════════════
+       АДАПТИВНОСТЬ — МОБИЛЬНЫЙ
+       ══════════════════════════════════════════ */
+    @media (max-width: 767px) {
+      .section {
+        padding: 64px 16px;
+      }
+
+      .nav-list {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 280px;
+        height: 100vh;
+        background: var(--glass-bg);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border-left: 1px solid var(--glass-border);
+        flex-direction: column;
+        padding: 88px 24px 24px;
+        gap: 4px;
+        transform: translateX(100%);
+        transition: var(--transition);
+        box-shadow: -8px 0 32px rgba(0, 0, 0, 0.1);
+      }
+
+      .nav-list.open {
+        transform: translateX(0);
+      }
+
+      .nav-link {
+        font-size: 1.05rem;
+        padding: 12px 16px;
+      }
+
+      .burger {
+        display: flex;
+      }
+
+      .about-grid {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+
+      .about-avatar-ring {
+        width: 200px;
+        height: 200px;
+      }
+
+      .about-tags {
+        justify-content: center;
+      }
+
+      .image-card {
+        flex: 0 0 260px;
+      }
+
+      .video-card {
+        flex: 0 0 280px;
+      }
+
+      .carousel-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
+      }
+
+      .carousel-btn-prev { left: 4px; }
+      .carousel-btn-next { right: 4px; }
+
+      .presentation-viewer iframe,
+      .presentation-viewer embed {
+        height: 400px;
+      }
+
+      .project-viewer iframe {
+        height: 450px;
+      }
+
+      .hero-title {
+        font-size: clamp(2.2rem, 10vw, 3.5rem);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════
+       АНИМИРОВАННЫЙ ФОН — плавающие блобы
+       ═══════════════════════════════════════ -->
+  <div class="bg-blobs" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <div class="blob blob-4"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       ШАПКА САЙТА
+       ═══════════════════════════════════════ -->
+  <header class="site-header" id="site-header">
+    <div class="header-inner">
+      <!-- STUDENT_NAME: имя ученика -->
+      <a href="#hero" class="logo">Лиза✨</a>
+
+      <nav>
+        <ul class="nav-list" id="nav-list">
+          <li><a href="#about" class="nav-link" data-section="about">Обо мне</a></li>
+          <li><a href="#images" class="nav-link" data-section="images">Картинки</a></li>
+          <li><a href="#videos" class="nav-link" data-section="videos">Видео</a></li>
+          <li><a href="#presentation" class="nav-link" data-section="presentation">Презентация</a></li>
+          <li><a href="#projects" class="nav-link" data-section="projects">Проекты</a></li>
+        </ul>
+      </nav>
+
+      <button class="burger" id="burger" aria-label="Открыть меню">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ═══════════════════════════════════════
+         ГЕРОЙ-СЕКЦИЯ (первый экран)
+         ═══════════════════════════════════════ -->
+    <section class="hero" id="hero">
+      <div class="hero-badge">🚀 Добро пожаловать в мой мир</div>
+
+      <!-- STUDENT_NAME: имя ученика в заголовке -->
+      <h1 class="hero-title">
+        Привет, я <span class="gradient-text">Лиза</span>
+      </h1>
+
+      <p class="hero-description">
+        Юный создатель цифрового контента. Я придумываю идеи и оживляю их с помощью искусственного интеллекта — картинки, видео, презентации и даже сайты!
+      </p>
+
+      <a href="#images" class="hero-cta">Смотреть работы ✨</a>
+
+      <div class="hero-scroll-hint">
+        <span>Листай вниз</span>
+        <div class="scroll-arrow"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         СЕКЦИЯ «ОБО МНЕ»
+         ═══════════════════════════════════════ -->
+    <section class="section" id="about">
+      <h2 class="section-title reveal">Обо мне 👋</h2>
+      <p class="section-subtitle reveal">Немного о том, кто я и чем увлекаюсь</p>
+
+      <div class="about-grid reveal-stagger">
+        <!-- Левая карточка: аватар -->
+        <div class="about-avatar-wrap reveal">
+          <div class="about-avatar-ring">
+            <!-- AVATAR_PLACEHOLDER: images/avatar.jpg -->
+            <img
+              class="about-avatar"
+              src="images/avatar.png"
+              alt="Мой аватар"
+              width="240"
+              height="240"
+            >
+          </div>
+        </div>
+
+        <!-- Правая карточка: текст -->
+        <div class="about-text-card reveal">
+          <!-- ABOUT_TEXT: 3–4 предложения о себе -->
+          <p>
+            Мне 12 лет, и я обожаю создавать крутой контент с помощью нейросетей.
+            Я генерирую картинки, монтирую видео и делаю презентации, которые удивляют даже взрослых.
+            Мечтаю стать разработчиком и создавать свои собственные приложения.
+            А пока — учусь, экспериментирую и делюсь результатами здесь!
+          </p>
+          <div class="about-tags">
+            <span class="about-tag">🎨 ИИ-арт</span>
+            <span class="about-tag">🎬 Видеомонтаж</span>
+            <span class="about-tag">📊 Презентации</span>
+            <span class="about-tag">🌐 Сайты</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         СЕКЦИЯ «МОИ КАРТИНКИ»
+         ═══════════════════════════════════════ -->
+    <section class="section" id="images">
+      <h2 class="section-title reveal">Мои картинки 🎨</h2>
+      <p class="section-subtitle reveal">Я создаю картинки в ИИ и люблю придумывать новые идеи</p>
+
+      <div class="carousel-wrap reveal">
+        <button class="carousel-btn carousel-btn-prev" data-carousel="images-carousel" aria-label="Назад">◀</button>
+
+        <div class="carousel" id="images-carousel">
+          <!-- IMAGES: файлы из папки images/ -->
+           <div class="image-card" data-lightbox="images/works/work1.png">
+            <div class="image-card-glow"></div>
+            <img src="images/works/work1.png" alt="Работа 1" loading="lazy">
+            <div class="image-card-body">
+              <div class="image-card-title">Космический кот 🐱</div>
+            </div>
+          </div>
+          <div class="image-card" data-lightbox="images/works/work2.png">
+            <div class="image-card-glow"></div>
+            <img src="images/works/work2.png" alt="Работа 2" loading="lazy">
+            <div class="image-card-body">
+              <div class="image-card-title">Город будущего 🏙️</div>
+            </div>
+          </div>
+
+          </div>
+          <div class="image-card" data-lightbox="images/works/work3.png">
+            <div class="image-card-glow"></div>
+            <img src="images/works/work3.png" alt="Работа 3" loading="lazy">
+            <div class="image-card-body">
+              <div class="image-card-title">Подводный мир 🌊</div>
+            </div>
+          </div>
+        <button class="carousel-btn carousel-btn-next" data-carousel="images-carousel" aria-label="Вперёд">▶</button>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         СЕКЦИЯ «МОИ ВИДЕО»
+         ═══════════════════════════════════════ -->
+    <section class="section" id="videos">
+      <h2 class="section-title reveal">Мои видео 🎬</h2>
+      <p class="section-subtitle reveal">Я создаю короткие ролики, монтирую их и добавляю эффекты</p>
+
+      <div class="carousel-wrap reveal">
+        <button class="carousel-btn carousel-btn-prev" data-carousel="videos-carousel" aria-label="Назад">◀</button>
+
+        <div class="carousel" id="videos-carousel">
+          <!-- VIDEO: видео и превью лежат в папке videos/ -->
+          <div class="video-card" data-video="videos/video1.mp4">
+            <div class="video-thumb">
+              <img src="videos/previews/preview1.png" alt="Превью видео 1" loading="lazy">
+              <div class="video-play-btn">▶</div>
+            </div>
+            <div class="video-card-body">
+              <div class="video-card-title">Пирог</div>
+            </div>
+          </div>
+
+          <div class="video-card" data-video="videos/video2.mp4">
+            <div class="video-thumb">
+              <img src="videos/previews/preview2.png" alt="Превью видео 2" loading="lazy">
+              <div class="video-play-btn">▶</div>
+            </div>
+            <div class="video-card-body">
+              <div class="video-card-title">Картошка фри</div>
+            </div>
+          </div>
+
+        <button class="carousel-btn carousel-btn-next" data-carousel="videos-carousel" aria-label="Вперёд">▶</button>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         СЕКЦИЯ «МОЯ ПРЕЗЕНТАЦИЯ»
+         ═══════════════════════════════════════ -->
+    <section class="section" id="presentation">
+      <h2 class="section-title reveal">Моя презентация 📊</h2>
+      <p class="section-subtitle reveal">Эта презентация — мой проект. Я сделал(а) оформление, картинки и структуру</p>
+
+      <div class="presentation-viewer reveal">
+        <!-- PRESENTATION: presentations/project.pdf -->
+        <iframe
+          src="presentations/project.pdf"
+          title="Моя презентация"
+          loading="lazy"
+        ></iframe>
+      </div>
+      <div class="btn-row reveal">
+        <!-- PRESENTATION: ссылка на скачивание -->
+        <a href="presentations/project.pdf" download class="btn btn-primary">
+          📥 Скачать PDF
+        </a>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         СЕКЦИЯ «МОИ ПРОЕКТЫ»
+         ═══════════════════════════════════════ -->
+    <section class="section" id="projects">
+      <h2 class="section-title reveal">Мои проекты 🌐</h2>
+      <p class="section-subtitle reveal">Здесь можно посмотреть сайты, которые я делал(а) раньше</p>
+
+      <div class="project-viewer reveal">
+        <!-- PROJECT_URL: вставьте URL прошлого сайта -->
+        <iframe
+          src="game.html"
+          title="Мой прошлый проект"
+          loading="lazy"
+        ></iframe>
+      </div>
+
+      <div class="btn-row reveal">
+        <!-- PROJECT_URL: ссылка на прошлый проект -->
+        <a href="game.html" target="_blank" rel="noopener" class="btn btn-outline">
+          🔗 Открыть в новой вкладке
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!-- ═══════════════════════════════════════
+       ПОДВАЛ
+       ═══════════════════════════════════════ -->
+  <footer class="site-footer">
+    <!-- STUDENT_NAME: имя ученика -->
+    © 2026 <span>ЛИЗА</span>. Этот сайт создан мной для демонстрации моих работ ✨
+  </footer>
+
+  <!-- ═══════════════════════════════════════
+       МОДАЛЬНОЕ ОКНО — КАРТИНКИ
+       ═══════════════════════════════════════ -->
+  <div class="modal-overlay" id="image-modal">
+    <div class="modal-content">
+      <button class="modal-close" aria-label="Закрыть">✕</button>
+      <img src="" alt="Увеличенное изображение" id="modal-image">
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       МОДАЛЬНОЕ ОКНО — ВИДЕО
+       ═══════════════════════════════════════ -->
+  <div class="modal-overlay" id="video-modal">
+    <div class="modal-content">
+      <button class="modal-close" aria-label="Закрыть">✕</button>
+      <video controls id="modal-video">
+        <source src="" type="video/mp4">
+        Ваш браузер не поддерживает воспроизведение видео.
+      </video>
+    </div>
+  </div>
+
+  <script>
+    /* ══════════════════════════════════════════
+       ИНИЦИАЛИЗАЦИЯ ПОСЛЕ ЗАГРУЗКИ СТРАНИЦЫ
+       ══════════════════════════════════════════ */
+    document.addEventListener('DOMContentLoaded', function () {
+
+      /* ──────────────────────────────────────
+         1. ШАПКА: эффект при скролле
+         ────────────────────────────────────── */
+      var header = document.getElementById('site-header');
+
+      function updateHeader() {
+        if (window.scrollY > 40) {
+          header.classList.add('scrolled');
+        } else {
+          header.classList.remove('scrolled');
+        }
+      }
+
+      window.addEventListener('scroll', updateHeader, { passive: true });
+      updateHeader();
+
+      /* ──────────────────────────────────────
+         2. МОБИЛЬНОЕ МЕНЮ (бургер)
+         ────────────────────────────────────── */
+      var burger = document.getElementById('burger');
+      var navList = document.getElementById('nav-list');
+
+      burger.addEventListener('click', function () {
+        burger.classList.toggle('open');
+        navList.classList.toggle('open');
+      });
+
+      /* Закрытие меню при клике на ссылку */
+      navList.querySelectorAll('.nav-link').forEach(function (link) {
+        link.addEventListener('click', function () {
+          burger.classList.remove('open');
+          navList.classList.remove('open');
+        });
+      });
+
+      /* ──────────────────────────────────────
+         3. ПОДСВЕТКА АКТИВНОГО РАЗДЕЛА В МЕНЮ
+         ────────────────────────────────────── */
+      var sections = document.querySelectorAll('section[id]');
+      var navLinks = document.querySelectorAll('.nav-link[data-section]');
+
+      var navObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            var id = entry.target.getAttribute('id');
+            navLinks.forEach(function (link) {
+              link.classList.toggle('active', link.getAttribute('data-section') === id);
+            });
+          }
+        });
+      }, {
+        rootMargin: '-30% 0px -60% 0px',
+        threshold: 0
+      });
+
+      sections.forEach(function (section) {
+        navObserver.observe(section);
+      });
+
+      /* ──────────────────────────────────────
+         4. АНИМАЦИЯ ПОЯВЛЕНИЯ СЕКЦИЙ ПРИ СКРОЛЛЕ
+         ────────────────────────────────────── */
+      var revealElements = document.querySelectorAll('.reveal');
+
+      var revealObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      }, {
+        rootMargin: '0px 0px -60px 0px',
+        threshold: 0.1
+      });
+
+      revealElements.forEach(function (el) {
+        revealObserver.observe(el);
+      });
+
+      /* ──────────────────────────────────────
+         5. КАРУСЕЛИ: прокрутка по кнопкам
+         ────────────────────────────────────── */
+      document.querySelectorAll('.carousel-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var carouselId = btn.getAttribute('data-carousel');
+          var carousel = document.getElementById(carouselId);
+          if (!carousel) return;
+
+          var scrollAmount = carousel.offsetWidth * 0.75;
+          var direction = btn.classList.contains('carousel-btn-next') ? 1 : -1;
+
+          carousel.scrollBy({
+            left: direction * scrollAmount,
+            behavior: 'smooth'
+          });
+        });
+      });
+
+      /* ──────────────────────────────────────
+         6. МОДАЛКА — КАРТИНКИ (lightbox)
+         ────────────────────────────────────── */
+      var imageModal = document.getElementById('image-modal');
+      var modalImage = document.getElementById('modal-image');
+
+      document.querySelectorAll('.image-card[data-lightbox]').forEach(function (card) {
+        card.addEventListener('click', function () {
+          var src = card.getAttribute('data-lightbox');
+          modalImage.src = src;
+          imageModal.classList.add('open');
+          document.body.style.overflow = 'hidden';
+        });
+      });
+
+      /* ──────────────────────────────────────
+         7. МОДАЛКА — ВИДЕО
+         ────────────────────────────────────── */
+      var videoModal = document.getElementById('video-modal');
+      var modalVideo = document.getElementById('modal-video');
+
+      document.querySelectorAll('.video-card[data-video]').forEach(function (card) {
+        card.addEventListener('click', function () {
+          var src = card.getAttribute('data-video');
+          modalVideo.querySelector('source').src = src;
+          modalVideo.load();
+          modalVideo.play();
+          videoModal.classList.add('open');
+          document.body.style.overflow = 'hidden';
+        });
+      });
+
+      /* ──────────────────────────────────────
+         8. ЗАКРЫТИЕ МОДАЛОК (общая логика)
+         ────────────────────────────────────── */
+      function closeImageModal() {
+        imageModal.classList.remove('open');
+        document.body.style.overflow = '';
+        setTimeout(function () { modalImage.src = ''; }, 350);
+      }
+
+      function closeVideoModal() {
+        videoModal.classList.remove('open');
+        document.body.style.overflow = '';
+        modalVideo.pause();
+        modalVideo.currentTime = 0;
+        setTimeout(function () {
+          modalVideo.querySelector('source').src = '';
+          modalVideo.load();
+        }, 350);
+      }
+
+      /* Клик по фону */
+      imageModal.addEventListener('click', function (e) {
+        if (e.target === imageModal) closeImageModal();
+      });
+
+      videoModal.addEventListener('click', function (e) {
+        if (e.target === videoModal) closeVideoModal();
+      });
+
+      /* Кнопки закрытия */
+      imageModal.querySelector('.modal-close').addEventListener('click', closeImageModal);
+      videoModal.querySelector('.modal-close').addEventListener('click', closeVideoModal);
+
+      /* Клавиша Esc */
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+          if (imageModal.classList.contains('open')) closeImageModal();
+          if (videoModal.classList.contains('open')) closeVideoModal();
+        }
+      });
+
+      /* ──────────────────────────────────────
+         9. ЛЁГКИЙ ПАРАЛЛАКС БЛОБОВ ПРИ СКРОЛЛЕ
+         ────────────────────────────────────── */
+      var blobs = document.querySelectorAll('.blob');
+      var ticking = false;
+
+      window.addEventListener('scroll', function () {
+        if (!ticking) {
+          window.requestAnimationFrame(function () {
+            var scrollY = window.scrollY;
+            blobs.forEach(function (blob, i) {
+              var speed = (i + 1) * 0.02;
+              blob.style.transform = 'translateY(' + (scrollY * speed) + 'px)';
+            });
+            ticking = false;
+          });
+          ticking = true;
+        }
+      }, { passive: true });
+
+    });
+  </script>
+</body>
+</html>
