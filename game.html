@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Котик-путешественник</title>
+<style>
+  body { margin:0; background:#1a1a2e; color:#fff; font-family:Arial, sans-serif;
+         display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; }
+  canvas { background:#87CEEB; border:3px solid #444; border-radius:8px; display:block; }
+  #ui { margin-top:10px; font-size:14px; opacity:0.8; }
+  h1 { margin:10px 0; }
+</style>
+</head>
+<body>
+<h1>🐱 Котик-путешественник</h1>
+<canvas id="game" width="900" height="500"></canvas>
+<div id="ui">← → — движение, Пробел / ↑ — прыжок</div>
+
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+const GROUND = H - 80;
+
+// === СОСТОЯНИЯ ===
+const STATE = { MENU:0, PLAY:1, WIN:2, LOSE:3, LEVELUP:4 };
+let state = STATE.MENU;
+
+// === ОКРАСЫ КОТИКА ===
+const colors = [
+  { name:'Серый',    body:'#9aa0a6', dark:'#6b7075', ear:'#d9b3b3' },
+  { name:'Рыжий',    body:'#e8944a', dark:'#b56a2a', ear:'#f5c89a' },
+  { name:'Чёрный',   body:'#2a2a2a', dark:'#000000', ear:'#4a3a3a' },
+  { name:'Белый',    body:'#f5f5f0', dark:'#c8c8c0', ear:'#f5c8c8' },
+  { name:'Полосатый',body:'#c49a6c', dark:'#7a5a3a', ear:'#e0b890', stripes:true }
+];
+let chosenColor = 0;
+
+// === КОТИК ===
+const cat = {
+  x:100, y:GROUND-40, w:50, h:40,
+  vx:0, vy:0, onGround:true, dir:1,
+  anim:0
+};
+
+// === УРОВНИ ===
+const levels = [
+  { name:'Двор',       length:1800, speed:3, bg:'#87CEEB', ground:'#6b8e23', obstacles:['bin','puddle'] },
+  { name:'Парк',       length:2400, speed:4, bg:'#b0e0e6', ground:'#556b2f', obstacles:['bin','puddle','dog'] },
+  { name:'Центр города', length:3000, speed:5, bg:'#6495ed', ground:'#696969', obstacles:['bin','puddle','dog','car'] }
+];
+let currentLevel = 0;
+let cameraX = 0;
+let obstacles = [];
+let particles = [];
+let lives = 3;
+let invuln = 0;
+
+// === УПРАВЛЕНИЕ ===
+const keys = {};
+window.addEventListener('keydown', e => {
+  keys[e.code] = true;
+  if (state === STATE.MENU) {
+    if (e.code === 'ArrowLeft')  chosenColor = (chosenColor - 1 + colors.length) % colors.length;
+    if (e.code === 'ArrowRight') chosenColor = (chosenColor + 1) % colors.length;
+    if (e.code === 'Enter' || e.code === 'Space') startLevel();
+  } else if (state === STATE.PLAY) {
+    if ((e.code === 'Space' || e.code === 'ArrowUp') && cat.onGround) {
+      cat.vy = -13; cat.onGround = false;
+    }
+  } else if (state === STATE.WIN || state === STATE.LOSE || state === STATE.LEVELUP) {
+    if (e.code === 'Enter' || e.code === 'Space') {
+      if (state === STATE.LEVELUP) { currentLevel++; startLevel(); }
+      else if (state === STATE.WIN) { currentLevel = 0; lives = 3; state = STATE.MENU; }
+      else { lives = 3; startLevel(); }
+    }
+  }
+});
+window.addEventListener('keyup', e => keys[e.code] = false);
+
+// === ГЕНЕРАЦИЯ УРОВНЯ ===
+function startLevel() {
+  state = STATE.PLAY;
+  const L = levels[currentLevel];
+  obstacles = [];
+  cameraX = 0;
+  cat.x = 100; cat.y = GROUND - cat.h; cat.vx = 0; cat.vy = 0;
+  // расставляем препятствия
+  let x = 400;
+  while (x < L.length - 200) {
+    const type = L.obstacles[Math.floor(Math.random()*L.obstacles.length)];
+    let w=40, h=40;
+    if (type==='bin')    { w=40; h=50; }
+    if (type==='puddle') { w=70; h=15; }
+    if (type==='dog')    { w=55; h=40; }
+    if (type==='car')    { w=110; h=50; }
+    obstacles.push({ type, x, y:GROUND-h, w, h, passed:false });
+    x += 220 + Math.random()*180;
+  }
+}
+
+// === РИСОВАНИЕ КОТИКА ===
+function drawCat(x, y, colorIdx, dir, anim) {
+  const c = colors[colorIdx];
+  ctx.save();
+  ctx.translate(x + cat.w/2, y + cat.h/2);
+  ctx.scale(dir, 1);
+  ctx.translate(-cat.w/2, -cat.h/2);
+
+  // тень
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.beginPath(); ctx.ellipse(25, 42, 22, 5, 0, 0, Math.PI*2); ctx.fill();
+
+  // хвост
+  ctx.strokeStyle = c.body; ctx.lineWidth = 6; ctx.lineCap='round';
+  ctx.beginPath();
+  ctx.moveTo(5, 20);
+  ctx.quadraticCurveTo(-8, 5, -3, -5);
+  ctx.stroke();
+
+  // тело
+  ctx.fillStyle = c.body;
+  ctx.beginPath(); ctx.ellipse(25, 25, 20, 14, 0, 0, Math.PI*2); ctx.fill();
+
+  // полоски
+  if (c.stripes) {
+    ctx.strokeStyle = c.dark; ctx.lineWidth = 2;
+    for (let i=0;i<3;i++){
+      ctx.beginPath();
+      ctx.moveTo(15+i*6, 14); ctx.lineTo(15+i*6, 36);
+      ctx.stroke();
+    }
+  }
+
+  // лапки (анимация)
+  ctx.fillStyle = c.dark;
+  const legOff = Math.sin(anim)*3;
+  ctx.fillRect(12, 35+legOff, 6, 8);
+  ctx.fillRect(30, 35-legOff, 6, 8);
+
+  // голова
+  ctx.fillStyle = c.body;
+  ctx.beginPath(); ctx.arc(40, 15, 12, 0, Math.PI*2); ctx.fill();
+
+  // ушки
+  ctx.fillStyle = c.body;
+  ctx.beginPath();
+  ctx.moveTo(33, 8); ctx.lineTo(30, 0); ctx.lineTo(37, 5); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(45, 8); ctx.lineTo(48, 0); ctx.lineTo(43, 5); ctx.fill();
+  ctx.fillStyle = c.ear;
+  ctx.beginPath();
+  ctx.moveTo(34, 7); ctx.lineTo(32, 2); ctx.lineTo(36, 5); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(44, 7); ctx.lineTo(46, 2); ctx.lineTo(42, 5); ctx.fill();
+
+  // глаза
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.arc(37, 15, 2.5, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(44, 15, 2.5, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#222';
+  ctx.beginPath(); ctx.arc(37, 15, 1.3, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(44, 15, 1.3, 0, Math.PI*2); ctx.fill();
+
+  // носик
+  ctx.fillStyle = '#ff9999';
+  ctx.beginPath(); ctx.arc(41, 19, 1.5, 0, Math.PI*2); ctx.fill();
+
+  // усы
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 0.8;
+  ctx.beginPath();
+  ctx.moveTo(36,20); ctx.lineTo(30,21);
+  ctx.moveTo(36,21); ctx.lineTo(30,23);
+  ctx.moveTo(46,20); ctx.lineTo(52,21);
+  ctx.moveTo(46,21); ctx.lineTo(52,23);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+// === РИСОВАНИЕ ПРЕПЯТСТВИЙ ===
+function drawObstacle(o) {
+  const x = o.x - cameraX;
+  if (x < -150 || x > W+50) return;
+  if (o.type === 'bin') {
+    ctx.fillStyle = '#3a5a3a';
+    ctx.fillRect(x, o.y, o.w, o.h);
+    ctx.fillStyle = '#2a4a2a';
+    ctx.fillRect(x-3, o.y, o.w+6, 6);
+    ctx.fillStyle = '#fff';
+    ctx.font = '10px Arial';
+    ctx.fillText('♻', x+12, o.y+30);
+  } else if (o.type === 'puddle') {
+    ctx.fillStyle = 'rgba(100,150,200,0.7)';
+    ctx.beginPath();
+    ctx.ellipse(x+o.w/2, o.y+o.h/2, o.w/2, o.h/2, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+    ctx.beginPath();
+    ctx.ellipse(x+o.w/2-10, o.y+o.h/2-3, 8, 2, 0, 0, Math.PI*2);
+    ctx.stroke();
+  } else if (o.type === 'dog') {
+    // тело
+    ctx.fillStyle = '#8b4513';
+    ctx.fillRect(x+10, o.y+10, 35, 22);
+    // голова
+    ctx.beginPath(); ctx.arc(x+45, o.y+15, 10, 0, Math.PI*2); ctx.fill();
+    // уши
+    ctx.beginPath(); ctx.moveTo(x+40, o.y+8); ctx.lineTo(x+38, o.y); ctx.lineTo(x+44, o.y+5); ctx.fill();
+    // лапы
+    ctx.fillStyle = '#6b3410';
+    ctx.fillRect(x+12, o.y+30, 5, 10);
+    ctx.fillRect(x+38, o.y+30, 5, 10);
+    // глаз
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(x+48, o.y+14, 2, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#000';
+    ctx.beginPath(); ctx.arc(x+48, o.y+14, 1, 0, Math.PI*2); ctx.fill();
+    // пасть
+    ctx.strokeStyle = '#000'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(x+50, o.y+18); ctx.lineTo(x+54, o.y+20); ctx.stroke();
+  } else if (o.type === 'car') {
+    ctx.fillStyle = '#c0392b';
+    ctx.fillRect(x, o.y+15, o.w, o.h-15);
+    ctx.fillStyle = '#922b21';
+    ctx.fillRect(x+15, o.y, o.w-30, 20);
+    // окна
+    ctx.fillStyle = '#aed6f1';
+    ctx.fillRect(x+20, o.y+4, 20, 12);
+    ctx.fillRect(x+45, o.y+4, 20, 12);
+    // колёса
+    ctx.fillStyle = '#222';
+    ctx.beginPath(); ctx.arc(x+20, o.y+o.h, 8, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x+o.w-20, o.y+o.h, 8, 0, Math.PI*2); ctx.fill();
+  }
+}
+
+// === ФОН ===
+function drawBackground() {
+  const L = levels[currentLevel];
+  // небо
+  ctx.fillStyle = L.bg;
+  ctx.fillRect(0, 0, W, GROUND);
+
+  // солнце
+  ctx.fillStyle = 'rgba(255,240,150,0.9)';
+  ctx.beginPath(); ctx.arc(W-80, 80, 35, 0, Math.PI*2); ctx.fill();
+
+  // облака (параллакс)
+  ctx.fillStyle = 'rgba(255,255,255,0.8)';
+  for (let i=0;i<5;i++){
+    const cx = ((i*250 - cameraX*0.2) % (W+200) + W+200) % (W+200) - 100;
+    ctx.beginPath();
+    ctx.arc(cx, 60+i*20, 20, 0, Math.PI*2);
+    ctx.arc(cx+20, 55+i*20, 25, 0, Math.PI*2);
+    ctx.arc(cx+40, 60+i*20, 20, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  // дальние дома/деревья
+  ctx.fillStyle = 'rgba(80,80,100,0.5)';
+  for (let i=0;i<10;i++){
+    const hx = ((i*180 - cameraX*0.4) % (W+200) + W+200) % (W+200) - 100;
+    ctx.fillRect(hx, GROUND-120, 80, 120);
+    // окна
+    ctx.fillStyle = 'rgba(255,220,100,0.6)';
+    for (let r=0;r<3;r++) for (let c=0;c<2;c++)
+      ctx.fillRect(hx+15+c*30, GROUND-110+r*35, 15, 20);
+    ctx.fillStyle = 'rgba(80,80,100,0.5)';
+  }
+
+  // земля
+  ctx.fillStyle = L.ground;
+  ctx.fillRect(0, GROUND, W, H-GROUND);
+
+  // дорожка
+  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.fillRect(0, GROUND, W, 5);
+}
+
+// === ЧАСТИЦЫ ===
+function addParticles(x, y, color, n=10) {
+  for (let i=0;i<n;i++){
+    particles.push({
+      x, y,
+      vx:(Math.random()-0.5)*6,
+      vy:-Math.random()*5-2,
+      life:30, color
+    });
+  }
+}
+function updateParticles() {
+  for (let p of particles) {
+    p.x += p.vx; p.y += p.vy; p.vy += 0.3; p.life--;
+  }
+  particles = particles.filter(p => p.life > 0);
+}
+function drawParticles() {
+  for (let p of particles) {
+    ctx.fillStyle = p.color;
+    ctx.globalAlpha = p.life/30;
+    ctx.fillRect(p.x - cameraX, p.y, 4, 4);
+  }
+  ctx.globalAlpha = 1;
+}
+
+// === КОЛЛИЗИИ ===
+function collide(a, b) {
+  return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y;
+}
+
+// === ОБНОВЛЕНИЕ ===
+function update() {
+  if (state !== STATE.PLAY) return;
+  const L = levels[currentLevel];
+
+  // движение
+  if (keys['ArrowLeft'])  { cat.vx = -4; cat.dir = -1; }
+  else if (keys['ArrowRight']) { cat.vx = 4; cat.dir = 1; }
+  else cat.vx *= 0.8;
+
+  // гравитация
+  cat.vy += 0.6;
+  cat.x += cat.vx;
+  cat.y += cat.vy;
+
+  // земля
+  if (cat.y + cat.h >= GROUND) {
+    cat.y = GROUND - cat.h;
+    cat.vy = 0;
+    cat.onGround = true;
+  }
+
+  // границы
+  if (cat.x < cameraX) cat.x = cameraX;
+  if (cat.x + cat.w > L.length) cat.x = L.length - cat.w;
+
+  // камера
+  cameraX = cat.x - 250;
+  if (cameraX < 0) cameraX = 0;
+  if (cameraX > L.length - W) cameraX = L.length - W;
+
+  // анимация
+  if (Math.abs(cat.vx) > 0.5) cat.anim += 0.3;
+
+  // столкновения
+  if (invuln > 0) invuln--;
+  for (let o of obstacles) {
+    const hitbox = { x:cat.x+5, y:cat.y+5, w:cat.w-10, h:cat.h-10 };
+    if (collide(hitbox, o)) {
+      if (invuln === 0) {
+        lives--;
+        invuln = 60;
+        addParticles(cat.x+cat.w/2, cat.y+cat.h/2, '#ff6666', 15);
+        if (lives <= 0) { state = STATE.LOSE; return; }
+      }
+    }
+  }
+
+  // победа на уровне
+  if (cat.x + cat.w >= L.length) {
+    if (currentLevel >= levels.length - 1) state = STATE.WIN;
+    else state = STATE.LEVELUP;
+  }
+
+  updateParticles();
+}
+
+// === ОТРИСОВКА ===
+function draw() {
+  drawBackground();
+
+  // препятствия
+  for (let o of obstacles) drawObstacle(o);
+
+  // финиш
+  const L = levels[currentLevel];
+  const fx = L.length - cameraX;
+  if (fx < W+50 && fx > -50) {
+    ctx.fillStyle = '#ffd700';
+    ctx.fillRect(fx-2, GROUND-80, 4, 80);
+    ctx.fillStyle = '#ff4444';
+    ctx.beginPath();
+    ctx.moveTo(fx+2, GROUND-80);
+    ctx.lineTo(fx+30, GROUND-70);
+    ctx.lineTo(fx+2, GROUND-60);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 14px Arial';
+    ctx.fillText('ФИНИШ', fx+5, GROUND-68);
+  }
+
+  // котик
+  if (invuln === 0 || Math.floor(invuln/4)%2===0)
+    drawCat(cat.x - cameraX, cat.y, chosenColor, cat.dir, cat.anim);
+
+  drawParticles();
+
+  // HUD
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fillRect(10, 10, 250, 60);
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 16px Arial';
+  ctx.fillText(`Уровень ${currentLevel+1}: ${L.name}`, 20, 32);
+  ctx.font = '14px Arial';
+  ctx.fillText(`❤❤❤`.slice(0, lives*2+1).replace(/./g, m=>m==='❤'?'❤':''), 20, 55);
+  // полоса прогресса
+  const prog = cat.x / L.length;
+  ctx.fillStyle = '#333';
+  ctx.fillRect(20, 60, 230, 5);
+  ctx.fillStyle = '#4caf50';
+  ctx.fillRect(20, 60, 230*prog, 5);
+
+  // оверлеи
+  if (state === STATE.MENU) drawMenu();
+  if (state === STATE.WIN) drawOverlay('🏆 ПОБЕДА! Все уровни пройдены!', 'Enter — в меню');
+  if (state === STATE.LOSE) drawOverlay('💀 Игра окончена', 'Enter — заново');
+  if (state === STATE.LEVELUP) drawOverlay(`✨ Уровень "${L.name}" пройден!`, 'Enter — следующий уровень');
+}
+
+function drawMenu() {
+  ctx.fillStyle = 'rgba(0,0,0,0.75)';
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#fff';
+  ctx.textAlign = 'center';
+  ctx.font = 'bold 40px Arial';
+  ctx.fillText('🐱 Котик-путешественник', W/2, 80);
+
+  ctx.font = '20px Arial';
+  ctx.fillText('Выбери окрас котика (← →):', W/2, 140);
+
+  // превью котика
+  drawCat(W/2-25, 180, chosenColor, 1, performance.now()/100);
+  ctx.font = 'bold 24px Arial';
+  ctx.fillStyle = '#ffd700';
+  ctx.fillText(colors[chosenColor].name.toUpperCase(), W/2, 260);
+
+  // стрелочки
+  ctx.fillStyle = '#fff';
+  ctx.font = '40px Arial';
+  ctx.fillText('◀', W/2-120, 220);
+  ctx.fillText('▶', W/2+120, 220);
+
+  ctx.font = '18px Arial';
+  ctx.fillStyle = '#fff';
+  ctx.fillText('Уровни:', W/2, 310);
+  levels.forEach((l, i) => {
+    ctx.fillText(`${i+1}. ${l.name}`, W/2, 340 + i*25);
+  });
+
+  ctx.font = 'bold 22px Arial';
+  ctx.fillStyle = '#4caf50';
+  ctx.fillText('Нажми ENTER чтобы начать!', W/2, 460);
+  ctx.textAlign = 'left';
+}
+
+function drawOverlay(title, hint) {
+  ctx.fillStyle = 'rgba(0,0,0,0.7)';
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#fff';
+  ctx.textAlign = 'center';
+  ctx.font = 'bold 36px Arial';
+  ctx.fillText(title, W/2, H/2-20);
+  ctx.font = '20px Arial';
+  ctx.fillStyle = '#ffd700';
+  ctx.fillText(hint, W/2, H/2+30);
+  ctx.textAlign = 'left';
+}
+
+// === ГЛАВНЫЙ ЦИКЛ ===
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>
